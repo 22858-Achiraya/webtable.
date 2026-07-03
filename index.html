@@ -3,137 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเก็บข้อมูลแบบตาราง</title>
+    <title>ระบบจัดการข้อมูล (Data Manager)</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px auto;
-            max-width: 800px;
-            background-color: #f9f9f9;
-            color: #333;
+        /* ตั้งค่าสีและรูปแบบตัวอักษรพื้นฐาน */
+        :root {
+            --primary-color: #4f46e5;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
         }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h2 { text-align: center; }
-        .form-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover { background-color: #0056b3; }
-        .btn-delete { background-color: #dc3545; }
-        .btn-delete:hover { background-color: #c82333; }
         
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h2 { margin: 0; }
+
+        /* ฟอร์มและปุ่ม */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary-color); }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.85; }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-danger { background-color: var(--danger-color); padding: 6px 12px; font-size: 12px; }
+        .btn-success { background-color: var(--success-color); }
+
+        /* ตาราง */
+        .table-container { overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
+            padding: 14px 16px;
             text-align: left;
+            border-bottom: 1px solid #e5e7eb;
         }
-        th { background-color: #f2f2f2; }
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        tr:hover { background-color: #f9fafb; }
+
+        /* ระบบค้นหา */
+        .search-bar {
+            width: 100%;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>📝 ระบบเก็บข้อมูลส่วนบุคคล</h2>
-        
-        <div class="form-group">
-            <input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล" required>
-            <input type="text" id="jobInput" placeholder="ตำแหน่ง/อาชีพ" required>
-            <button onclick="addData()">เพิ่มข้อมูล</button>
+    <div class="dashboard-container">
+        <div class="header">
+            <h2>📊 Data Manager (Pro)</h2>
+            <button class="btn-success" onclick="exportToCSV()">📥 ดาวน์โหลด CSV</button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 10%;">ลำดับ</th>
-                    <th style="width: 40%;">ชื่อ - นามสกุล</th>
-                    <th style="width: 35%;">ตำแหน่ง/อาชีพ</th>
-                    <th style="width: 15%;">จัดการ</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                </tbody>
-        </table>
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 ค้นหาชื่อ, อีเมล หรือแผนก..." onkeyup="filterTable()">
+
+        <div class="controls">
+            <input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล" required>
+            <input type="email" id="emailInput" placeholder="อีเมล" required>
+            <select id="deptInput">
+                <option value="การตลาด">การตลาด</option>
+                <option value="ไอที">ไอที</option>
+                <option value="บุคคล">บุคคล</option>
+                <option value="บัญชี">บัญชี</option>
+            </select>
+            <button class="btn-primary" onclick="addData()">+ เพิ่มข้อมูล</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>ชื่อ - นามสกุล</th>
+                        <th>อีเมล</th>
+                        <th>แผนก</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // 1. ดึงข้อมูลจาก LocalStorage (ถ้ามี) หรือสร้างเป็น Array ว่าง
-        let dataList = JSON.parse(localStorage.getItem('myTableData')) || [];
+        // 1. ดึงข้อมูลจาก LocalStorage
+        let dataList = JSON.parse(localStorage.getItem('proTableData')) || [];
 
-        // 2. ฟังก์ชันสำหรับแสดงผลข้อมูลลงในตาราง
-        function renderTable() {
+        // 2. ฟังก์ชันแสดงผลตาราง
+        function renderTable(dataToRender = dataList) {
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ''; // ล้างค่าเดิมก่อน
+            tableBody.innerHTML = ''; 
 
-            dataList.forEach((data, index) => {
+            dataToRender.forEach((data, index) => {
                 const row = `<tr>
                     <td>${index + 1}</td>
                     <td>${data.name}</td>
-                    <td>${data.job}</td>
-                    <td><button class="btn-delete" onclick="deleteData(${index})">ลบ</button></td>
+                    <td>${data.email}</td>
+                    <td><span style="background:#e0e7ff; color:#3730a3; padding:4px 8px; border-radius:4px; font-size:12px;">${data.dept}</span></td>
+                    <td><button class="btn-danger" onclick="deleteData(${index})">ลบ</button></td>
                 </tr>`;
                 tableBody.innerHTML += row;
             });
         }
 
-        // 3. ฟังก์ชันสำหรับเพิ่มข้อมูล
+        // 3. ฟังก์ชันเพิ่มข้อมูล
         function addData() {
-            const name = document.getElementById('nameInput').value;
-            const job = document.getElementById('jobInput').value;
+            const name = document.getElementById('nameInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
+            const dept = document.getElementById('deptInput').value;
 
-            if (name === '' || job === '') {
+            if (!name || !email) {
                 alert('กรุณากรอกข้อมูลให้ครบถ้วน!');
                 return;
             }
 
-            // นำข้อมูลใหม่ใส่เข้าไปใน Array
-            dataList.push({ name: name, job: job });
+            dataList.push({ name, email, dept });
+            localStorage.setItem('proTableData', JSON.stringify(dataList));
             
-            // บันทึกลง LocalStorage
-            localStorage.setItem('myTableData', JSON.stringify(dataList));
-
-            // เคลียร์ช่องพิมพ์
             document.getElementById('nameInput').value = '';
-            document.getElementById('jobInput').value = '';
-
-            // รีเฟรชตาราง
+            document.getElementById('emailInput').value = '';
+            
             renderTable();
         }
 
-        // 4. ฟังก์ชันสำหรับลบข้อมูล
+        // 4. ฟังก์ชันลบข้อมูล
         function deleteData(index) {
-            if(confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?')) {
-                dataList.splice(index, 1); // ลบข้อมูลตามตำแหน่ง index
-                localStorage.setItem('myTableData', JSON.stringify(dataList)); // อัปเดต LocalStorage
-                renderTable(); // รีเฟรชตาราง
+            if(confirm('ยืนยันการลบข้อมูล?')) {
+                dataList.splice(index, 1);
+                localStorage.setItem('proTableData', JSON.stringify(dataList));
+                renderTable();
             }
         }
 
-        // เรียกใช้ฟังก์ชันแสดงผลตารางทันทีเมื่อเปิดหน้าเว็บ
+        // 5. ฟังก์ชันค้นหาข้อมูล (Filter)
+        function filterTable() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = dataList.filter(data => 
+                data.name.toLowerCase().includes(searchText) || 
+                data.email.toLowerCase().includes(searchText) || 
+                data.dept.toLowerCase().includes(searchText)
+            );
+            renderTable(filteredData);
+        }
+
+        // 6. ฟังก์ชันส่งออกไฟล์ CSV
+        function exportToCSV() {
+            if (dataList.length === 0) {
+                alert("ไม่มีข้อมูลสำหรับดาวน์โหลด");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,%EF%BB%BF"; // รองรับภาษาไทย (BOM)
+            csvContent += "ลำดับ,ชื่อ-นามสกุล,อีเมล,แผนก\n"; // หัวตาราง
+            
+            dataList.forEach((data, index) => {
+                let row = `${index + 1},${data.name},${data.email},${data.dept}`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "my_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
         renderTable();
     </script>
 
