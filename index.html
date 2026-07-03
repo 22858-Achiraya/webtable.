@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเก็บข้อมูลพนักงาน / ลูกค้า</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --hover-color: #357abd;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        /* ส่วนฟอร์มกรอกข้อมูล */
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Kanit', sans-serif;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-add {
+            grid-column: 1 / -1; /* ให้ปุ่มกว้างเต็มแถว */
+            font-size: 1.1em;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            width: auto;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        /* ส่วนตาราง */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ระบบจัดการข้อมูล</h1>
+        
+        <div class="form-group">
+            <input type="text" id="firstName" placeholder="ชื่อ" required>
+            <input type="text" id="lastName" placeholder="นามสกุล" required>
+            <input type="email" id="email" placeholder="อีเมล">
+            <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์">
+            <button class="btn-add" onclick="addData()">+ เพิ่มข้อมูลลงตาราง</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ลำดับ</th>
+                    <th>ชื่อ - นามสกุล</th>
+                    <th>อีเมล</th>
+                    <th>เบอร์โทรศัพท์</th>
+                    <th>จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // โหลดข้อมูลจาก Local Storage เมื่อเปิดหน้าเว็บ
+        let dataList = JSON.parse(localStorage.getItem('myTableData')) || [];
+
+        // ฟังก์ชันสำหรับแสดงผลข้อมูลลงตาราง
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ''; // ล้างข้อมูลเดิมก่อนวาดใหม่
+
+            if (dataList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">ยังไม่มีข้อมูลในระบบ</td></tr>';
+                return;
+            }
+
+            dataList.forEach((data, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${data.firstName} ${data.lastName}</td>
+                    <td>${data.email || '-'}</td>
+                    <td>${data.phone || '-'}</td>
+                    <td><button class="btn-delete" onclick="deleteData(${index})">ลบ</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ฟังก์ชันสำหรับเพิ่มข้อมูล
+        function addData() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            // ตรวจสอบว่ากรอกข้อมูลสำคัญครบไหม
+            if (!firstName || !lastName) {
+                alert('กรุณากรอกชื่อและนามสกุลให้ครบถ้วน');
+                return;
+            }
+
+            // นำข้อมูลใหม่ใส่ใน Array
+            dataList.push({ firstName, lastName, email, phone });
+
+            // บันทึกลง Local Storage
+            localStorage.setItem('myTableData', JSON.stringify(dataList));
+
+            // เคลียร์ช่องกรอกข้อมูล
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+
+            // อัปเดตตาราง
+            renderTable();
+        }
+
+        // ฟังก์ชันสำหรับลบข้อมูล
+        function deleteData(index) {
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?')) {
+                dataList.splice(index, 1); // ลบข้อมูลออกจาก Array
+                localStorage.setItem('myTableData', JSON.stringify(dataList)); // อัปเดต Local Storage
+                renderTable(); // อัปเดตตาราง
+            }
+        }
+
+        // เรียกใช้งานครั้งแรกเมื่อโหลดหน้าเว็บ
+        renderTable();
+    </script>
+
+</body>
+</html>
