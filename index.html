@@ -3,229 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการข้อมูล (Data Manager)</title>
-    <style>
-        /* ตั้งค่าสีและรูปแบบตัวอักษรพื้นฐาน */
-        :root {
-            --primary-color: #4f46e5;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
-            --bg-color: #f3f4f6;
-            --text-color: #1f2937;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .dashboard-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 16px;
-            margin-bottom: 24px;
-        }
-
-        .header h2 { margin: 0; }
-
-        /* ฟอร์มและปุ่ม */
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        input, select {
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        input:focus { border-color: var(--primary-color); }
-
-        button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button:hover { opacity: 0.85; }
-        .btn-primary { background-color: var(--primary-color); }
-        .btn-danger { background-color: var(--danger-color); padding: 6px 12px; font-size: 12px; }
-        .btn-success { background-color: var(--success-color); }
-
-        /* ตาราง */
-        .table-container { overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: #4b5563;
-        }
-        tr:hover { background-color: #f9fafb; }
-
-        /* ระบบค้นหา */
-        .search-bar {
-            width: 100%;
-            margin-bottom: 16px;
-        }
-    </style>
+    <title>ระบบจัดการข้อมูลลูกค้า/พนักงาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 md:p-8">
 
-    <div class="dashboard-container">
-        <div class="header">
-            <h2>📊 Data Manager (Pro)</h2>
-            <button class="btn-success" onclick="exportToCSV()">📥 ดาวน์โหลด CSV</button>
+    <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-blue-600">📊 ระบบจัดการข้อมูล</h1>
+            <button onclick="exportToCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow transition">
+                📥 ดาวน์โหลด CSV
+            </button>
         </div>
 
-        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 ค้นหาชื่อ, อีเมล หรือแผนก..." onkeyup="filterTable()">
-
-        <div class="controls">
-            <input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล" required>
-            <input type="email" id="emailInput" placeholder="อีเมล" required>
-            <select id="deptInput">
-                <option value="การตลาด">การตลาด</option>
-                <option value="ไอที">ไอที</option>
-                <option value="บุคคล">บุคคล</option>
-                <option value="บัญชี">บัญชี</option>
-            </select>
-            <button class="btn-primary" onclick="addData()">+ เพิ่มข้อมูล</button>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-lg font-semibold mb-4" id="formTitle">➕ เพิ่มข้อมูลใหม่</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="nameInput" placeholder="ชื่อ - นามสกุล" class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="email" id="emailInput" placeholder="อีเมล" class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" id="phoneInput" placeholder="เบอร์โทรศัพท์" class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+            <div class="mt-4 flex gap-2">
+                <button onclick="saveData()" id="saveBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded shadow transition">บันทึกข้อมูล</button>
+                <button onclick="cancelEdit()" id="cancelBtn" class="hidden bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded shadow transition">ยกเลิก</button>
+            </div>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-800 text-white">
                     <tr>
-                        <th>ลำดับ</th>
-                        <th>ชื่อ - นามสกุล</th>
-                        <th>อีเมล</th>
-                        <th>แผนก</th>
-                        <th>จัดการ</th>
+                        <th class="p-4 border-b">ลำดับ</th>
+                        <th class="p-4 border-b">ชื่อ - นามสกุล</th>
+                        <th class="p-4 border-b">อีเมล</th>
+                        <th class="p-4 border-b">เบอร์โทรศัพท์</th>
+                        <th class="p-4 border-b text-center">จัดการ</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
+                <tbody id="tableBody" class="divide-y divide-gray-200">
                     </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // 1. ดึงข้อมูลจาก LocalStorage
-        let dataList = JSON.parse(localStorage.getItem('proTableData')) || [];
+        let dataList = JSON.parse(localStorage.getItem('myAdvancedTable')) || [];
+        let editingIndex = -1; // ตัวแปรเช็กว่ากำลังแก้ไขแถวไหนอยู่ (-1 คือไม่ได้แก้ไข)
 
-        // 2. ฟังก์ชันแสดงผลตาราง
-        function renderTable(dataToRender = dataList) {
+        // 1. ฟังก์ชันแสดงข้อมูล
+        function renderTable() {
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ''; 
+            tableBody.innerHTML = '';
 
-            dataToRender.forEach((data, index) => {
-                const row = `<tr>
-                    <td>${index + 1}</td>
-                    <td>${data.name}</td>
-                    <td>${data.email}</td>
-                    <td><span style="background:#e0e7ff; color:#3730a3; padding:4px 8px; border-radius:4px; font-size:12px;">${data.dept}</span></td>
-                    <td><button class="btn-danger" onclick="deleteData(${index})">ลบ</button></td>
+            if (dataList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">ยังไม่มีข้อมูลในระบบ</td></tr>`;
+                return;
+            }
+
+            dataList.forEach((data, index) => {
+                const row = `<tr class="hover:bg-gray-50 transition">
+                    <td class="p-4">${index + 1}</td>
+                    <td class="p-4 font-medium">${data.name}</td>
+                    <td class="p-4 text-gray-600">${data.email}</td>
+                    <td class="p-4 text-gray-600">${data.phone}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="editData(${index})" class="text-yellow-500 hover:text-yellow-700 mx-1">✏️ แก้ไข</button>
+                        <button onclick="deleteData(${index})" class="text-red-500 hover:text-red-700 mx-1">🗑️ ลบ</button>
+                    </td>
                 </tr>`;
                 tableBody.innerHTML += row;
             });
         }
 
-        // 3. ฟังก์ชันเพิ่มข้อมูล
-        function addData() {
+        // 2. ฟังก์ชันบันทึกข้อมูล (ใช้ได้ทั้งเพิ่มใหม่และอัปเดต)
+        function saveData() {
             const name = document.getElementById('nameInput').value.trim();
             const email = document.getElementById('emailInput').value.trim();
-            const dept = document.getElementById('deptInput').value;
+            const phone = document.getElementById('phoneInput').value.trim();
 
-            if (!name || !email) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน!');
+            if (!name || !email || !phone) {
+                alert('กรุณากรอกข้อมูลให้ครบทุกช่อง!');
                 return;
             }
 
-            dataList.push({ name, email, dept });
-            localStorage.setItem('proTableData', JSON.stringify(dataList));
+            if (editingIndex === -1) {
+                // เพิ่มข้อมูลใหม่
+                dataList.push({ name, email, phone });
+            } else {
+                // อัปเดตข้อมูลเดิม
+                dataList[editingIndex] = { name, email, phone };
+                cancelEdit(); // คืนค่าฟอร์มกลับเป็นโหมดปกติ
+            }
             
+            saveToStorageAndRender();
+        }
+
+        // 3. ฟังก์ชันดึงข้อมูลมาใส่ฟอร์มเพื่อแก้ไข
+        function editData(index) {
+            editingIndex = index;
+            const data = dataList[index];
+            
+            document.getElementById('nameInput').value = data.name;
+            document.getElementById('emailInput').value = data.email;
+            document.getElementById('phoneInput').value = data.phone;
+            
+            document.getElementById('formTitle').innerHTML = '✏️ แก้ไขข้อมูล';
+            document.getElementById('saveBtn').innerHTML = 'อัปเดตข้อมูล';
+            document.getElementById('saveBtn').classList.replace('bg-blue-500', 'bg-yellow-500');
+            document.getElementById('saveBtn').classList.replace('hover:bg-blue-600', 'hover:bg-yellow-600');
+            document.getElementById('cancelBtn').classList.remove('hidden');
+        }
+
+        // 4. ฟังก์ชันยกเลิกการแก้ไข
+        function cancelEdit() {
+            editingIndex = -1;
             document.getElementById('nameInput').value = '';
             document.getElementById('emailInput').value = '';
+            document.getElementById('phoneInput').value = '';
             
-            renderTable();
+            document.getElementById('formTitle').innerHTML = '➕ เพิ่มข้อมูลใหม่';
+            document.getElementById('saveBtn').innerHTML = 'บันทึกข้อมูล';
+            document.getElementById('saveBtn').classList.replace('bg-yellow-500', 'bg-blue-500');
+            document.getElementById('saveBtn').classList.replace('hover:bg-yellow-600', 'hover:bg-blue-600');
+            document.getElementById('cancelBtn').classList.add('hidden');
         }
 
-        // 4. ฟังก์ชันลบข้อมูล
+        // 5. ฟังก์ชันลบข้อมูล
         function deleteData(index) {
-            if(confirm('ยืนยันการลบข้อมูล?')) {
+            if(confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?')) {
                 dataList.splice(index, 1);
-                localStorage.setItem('proTableData', JSON.stringify(dataList));
-                renderTable();
+                if (editingIndex === index) cancelEdit(); // ถ้ายกเลิกตัวที่กำลังแก้พอดี
+                saveToStorageAndRender();
             }
         }
 
-        // 5. ฟังก์ชันค้นหาข้อมูล (Filter)
-        function filterTable() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const filteredData = dataList.filter(data => 
-                data.name.toLowerCase().includes(searchText) || 
-                data.email.toLowerCase().includes(searchText) || 
-                data.dept.toLowerCase().includes(searchText)
-            );
-            renderTable(filteredData);
-        }
-
-        // 6. ฟังก์ชันส่งออกไฟล์ CSV
+        // 6. ฟังก์ชันดาวน์โหลดเป็นไฟล์ CSV (Excel)
         function exportToCSV() {
             if (dataList.length === 0) {
-                alert("ไม่มีข้อมูลสำหรับดาวน์โหลด");
+                alert('ไม่มีข้อมูลสำหรับดาวน์โหลด');
                 return;
             }
-            let csvContent = "data:text/csv;charset=utf-8,%EF%BB%BF"; // รองรับภาษาไทย (BOM)
-            csvContent += "ลำดับ,ชื่อ-นามสกุล,อีเมล,แผนก\n"; // หัวตาราง
-            
-            dataList.forEach((data, index) => {
-                let row = `${index + 1},${data.name},${data.email},${data.dept}`;
-                csvContent += row + "\n";
+            // ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยได้
+            let csvContent = "\uFEFFลำดับ,ชื่อ-นามสกุล,อีเมล,เบอร์โทรศัพท์\n"; 
+            dataList.forEach((row, index) => {
+                csvContent += `${index + 1},"${row.name}","${row.email}","${row.phone}"\n`;
             });
 
-            const encodedUri = encodeURI(csvContent);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "my_data.csv");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "data_export.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+        // ฟังก์ชันช่วยบันทึกและรีเฟรชหน้าจอ
+        function saveToStorageAndRender() {
+            localStorage.setItem('myAdvancedTable', JSON.stringify(dataList));
+            document.getElementById('nameInput').value = '';
+            document.getElementById('emailInput').value = '';
+            document.getElementById('phoneInput').value = '';
+            renderTable();
+        }
+
+        // เรียกใช้งานตอนเปิดเว็บ
         renderTable();
     </script>
-
 </body>
 </html>
